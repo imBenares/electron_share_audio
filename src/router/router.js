@@ -1,0 +1,68 @@
+import { createRouter,createWebHashHistory } from "vue-router";
+import mainpage from '@/pages/mainpage/mainpage.vue';
+import login from '@/pages/login/login.vue';
+import home from '@/pages/home/home.vue';
+import filebrower from '@/pages/filebrower/filebrower.vue';
+import personal from "@/pages/personal/personal.vue";
+import register from "@/pages/register/register.vue";
+import edit from "@/pages/edit/edit.vue";
+
+const routes=[
+    {
+        path:'/',
+        name:'login',
+        component:login,
+    },
+    {
+        path:'/register',
+        name:'register',
+        component:register,
+    },
+    {
+        path:'/mainpage',
+        name:'mainpage',
+        component:mainpage,
+        redirect: { name: 'home' },
+        children:[
+            {
+                path:'home',
+                name:'home',
+                component:home,
+            },
+            {
+                path:'filebrower',
+                name:'filebrower',
+                component:filebrower,
+            },
+            {
+                path:'personal',
+                name:'personal',
+                component:personal,
+            },
+            {
+                path:'edit',
+                name:'edit',
+                component:edit,
+            },
+        ]
+    },
+    
+    
+]
+
+const router = createRouter({
+    history:createWebHashHistory(),
+    routes,
+});
+
+router.beforeEach((to,from,next) => {
+    const isAuthenticated = localStorage.getItem("isLoggedIn");
+    if (!isAuthenticated && !["/",  "/register","/login"].includes(to.path)) {
+      next("/"); // 未登录，重定向到登录页面
+    } else {
+      next(); // 继续导航
+    }
+  });
+
+export default router;
+
