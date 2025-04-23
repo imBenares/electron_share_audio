@@ -543,7 +543,7 @@ const canclesave = async() => {
   height: auto;
   width: 100%;
   top: 0px;
-  bottom: 80px;
+  bottom: 0px;
 }
 
 .information {
@@ -554,7 +554,7 @@ const canclesave = async() => {
   height: auto;
   width: 35%;
   top: 0px;
-  bottom: 80px;
+  bottom: 0px;
   min-width: 330px;
   background-color: #3d41573b;
 }
@@ -891,15 +891,15 @@ const canclesave = async() => {
 }
 
 .audio {
+  position: relative;
   flex: 1; /* 右侧自适应 */
   display: flex;
   flex-direction: column;
   height: auto;
   display: flex;
   height: auto;
-  left: 35%;
-  bottom: 80px;
   background-color: #41506825;
+  overflow-y: auto;
 }
 
 .audiolist{

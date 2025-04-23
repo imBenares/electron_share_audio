@@ -22,12 +22,12 @@ import { RouterView  } from 'vue-router';
 <style scoped>
 .main-content{
     position: absolute;
-    top: 0px;
+    top: 0;
     left: 180px;
-    height: auto;
-    width: auto;
-    right: 0px;
-    bottom: 0px;
+    right: 0;
+    bottom: 80px; /* 留出80px的空间 */
+    overflow-y: auto; /* 使内容可滚动 */
+    
 }
    
 #background{

@@ -482,6 +482,44 @@ app.post('/deleteaudio',(req,res) => {
   
 })
 
+app.post('/search', (req, res) => {
+
+  const { keyword } = req.body; 
+
+  if (!keyword) {
+    return res.status(400).json({ error: '关键词不能为空' });
+  }
+
+  const keywords = keyword.split(' ').filter(k => k.trim() !== '');
+
+  if (keywords.length === 0) {
+    return res.status(400).json({ error: '无有效关键词' });
+  }
+
+  // 构造 WHERE 和匹配度 score
+  const whereClauses = keywords.map(k => `audio_name LIKE ?`).join(' OR ');
+  const scoreClauses = keywords.map(k => `(CASE WHEN audio_name LIKE ? THEN 1 ELSE 0 END)`).join(' + ');
+
+  const sql = `
+    SELECT *, (${scoreClauses}) AS match_score
+    FROM audio_info
+    WHERE ${whereClauses}
+    ORDER BY match_score DESC
+  `;
+
+  const values = keywords.flatMap(k => [`%${k}%`, `%${k}%`]);
+
+  db.query(sql, values, (err, results) => {
+    if (err) {
+      console.error('数据库查询错误:', err);
+      return res.status(500).json({ error: '数据库错误' });
+    }else{
+      //console.log(results);
+      res.json(results);
+    }
+  });
+});
+
 
 
 // 启动服务器
