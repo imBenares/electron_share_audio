@@ -421,11 +421,8 @@ async function downloadHeadshot(userid) {
     if(!data.value){
       return;
     }
-    
     const response = await axios.get(fileurl, { responseType: 'stream' });
-
-    
-      
+ 
     const imagePath = path.join(imagefolder, data.filename);
     
     return new Promise((resolve, reject) => {
@@ -488,6 +485,26 @@ ipcMain.handle('checkfile',async(_,userid)=>{
     console.error('检查文件时出错:', error);
     return false;
   }
+})
+
+ipcMain.handle('downloadaudio',async(_,audiopath,id,filename)=>{
+  const audiofolder = path.join(audiopath,`${filename}.mp3`);
+  try {
+    const url = `http://127.0.0.1:3000/downloadaudio/${id}`;
+
+    const response = await axios.get(url, {responseType: 'stream' });
+
+    return new Promise((resolve,reject) => {
+      const writer = fs.createWriteStream(audiofolder);
+      response.data.pipe(writer);
+      writer.on('finish', () => resolve(audiofolder));
+      writer.on('error', reject);
+    })
+  } catch (error) {
+    console.error('下载文件失败:', error);
+    throw new Error('下载文件失败');
+  }
+  
 })
 
    

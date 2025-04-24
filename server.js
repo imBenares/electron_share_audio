@@ -332,7 +332,7 @@ app.post('/checkheadshotmd5',(req,res) => {
 })
 
 app.post('/getheadshotinfo',(req,res) => {
-  console.log('@@@@@@@@@@@@@@@@@@@@');
+  //console.log('@@@@@@@@@@@@@@@@@@@@');
   
   const { userid } = req.body;
   console.log(userid);
@@ -363,7 +363,7 @@ app.post('/getheadshotinfo',(req,res) => {
 })
 
 app.get('/getheadshot/:userid',(req,res) => {
-  console.log('###########################');
+  //console.log('###########################');
   
   const { userid } = req.params;
 
@@ -559,6 +559,24 @@ app.post("/category", (req, res) => {
     });
   })
 });
+
+app.get('/downloadaudio/:id',(req,res) => {
+  const { id } = req.params;
+  const query = 'SELECT audiopath FROM audio_info WHERE id = ?';
+  db.query(query,[id],(err,results) => {
+    if(err){
+      res.json({ message: '服务器错误' });
+      return;
+    }
+    const filePath = results[0].audiopath;
+    res.download(filePath, (err) => {
+      if (err) {
+        console.error('文件下载失败:', err);
+      }
+  })
+    
+  })
+})
 
 // 启动服务器
 app.listen(port, () => {

@@ -55,5 +55,8 @@ contextBridge.exposeInMainWorld('ffmpegAPI',{
 contextBridge.exposeInMainWorld('uploadAPI',{   
     uploadAudio(filepath, fileinfo){
         return ipcRenderer.invoke('uploadaudio', filepath, fileinfo);
+    },
+    downloadAudio( audiopath, id, filename ){
+        return ipcRenderer.invoke('downloadaudio', audiopath, id, filename );
     }
 }) 

@@ -95,7 +95,12 @@ const previewplay = async(audiolist) => {
 }
 
 const download = async(audiolist) => {
+    const id = audiolist.id;
+    const filename = audiolist.audio_name;
 
+  // 调用主进程方法（通过 preload 暴露的）
+    const path = await fileAPI.selectFolder();
+    await uploadAPI.downloadAudio(path,id,filename);
 }
 
 const recommend = async() => {
