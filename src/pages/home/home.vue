@@ -12,12 +12,23 @@
             <button @click="searchSounds">
                 搜索
             </button>
-            <button>
+            <button @click="category">
                 分类 
             </button>
         </div>
+        <div v-if="iscategory" class="category">
+            <button
+                v-for="cat in categories"
+                :key="cat.id"
+                @click="fetchByCategory(cat.id)"
+                >
+                 {{ cat.name }}
+            </button>
+            <div>
+                <button @click="uncategory">取消分类</button>
+            </div>
+        </div>
         <div>
-           
             <ul v-for="audiolist in audiolists" :key="audiolist.audio_name" class="audiolist">
                 <div id="audioname">
                     {{ audiolist.audio_name }}
@@ -28,18 +39,36 @@
                 </div>
             </ul>
         </div>
+        <div>
+            <button class="refresh" @click="refresh">刷新</button>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted  } from 'vue';
 import { useFileStore,useFileName } from "@/store/usefilestore";
 
 let data = null;
 const searchQuery = ref(null);
 const audiolists = ref(null);
+const iscategory = ref(false);
+const categories = [
+  { id: 1, name: "自然" },
+  { id: 2, name: "科技" },
+  { id: 3, name: "机械" },
+  { id: 4, name: "人声" },
+  { id: 5, name: "噪音" },
+  { id: 6, name: "交互" },
+  { id: 7, name: "战斗" },
+  { id: 8, name: "过场" },
+  { id: 9, name: "搞笑" },
+];
 
 const searchSounds = async() => {
+    if(!searchQuery.value){
+        return;
+    }
     const response = await fetch("http://localhost:3000/search",{
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,6 +98,40 @@ const download = async(audiolist) => {
 
 }
 
+const recommend = async() => {
+    const response = await fetch("http://localhost:3000/recommend");
+    const result = await response.json();
+    audiolists.value = result;
+}
+
+const refresh = async() => {
+    await recommend();
+}
+
+const category = async() => {
+    iscategory.value = true;
+}
+
+function uncategory(){
+    iscategory.value = false;
+}
+
+const fetchByCategory = async (categoryId) => {
+  const response = await fetch("http://localhost:3000/category", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+                                Id: categoryId,
+                            })
+    });
+  const result = await response.json();
+  audiolists.value = result;
+};
+
+onMounted(async () => {
+    await recommend();
+});
+
 </script>
 
 <style scoped>
@@ -93,10 +156,22 @@ const download = async(audiolist) => {
 }
 
 .audiolist {
-  margin-bottom: 15px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  list-style: none;
+    display: flex;
+    margin-bottom: 15px;
+    padding: 10px;
+    list-style: none;
 }
    
+.refresh{
+    position: fixed;
+    bottom: 120px;
+    right: 50px;
+}
+
+.category{
+    position: relative;
+    height: 80px;
+    width: 100%;
+    background-color: #1c222b44;
+}
 </style>

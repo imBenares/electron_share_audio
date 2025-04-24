@@ -30,6 +30,11 @@ db.connect(err => {
     console.log('成功连接到 MySQL 数据库!!!');
 });
 
+app.use((req, res, next) => {
+  console.log(`收到请求: ${req.method} ${req.url}`);
+  next();
+});
+
 const audiostorage = multer.diskStorage({
   // 指定存储目录
   destination: function (req, file, cb) {
@@ -62,10 +67,7 @@ const uploadImage = multer({
   limits: { fileSize: 50 * 1024 * 1024 }
 });
 
-app.use((req, res, next) => {
-  console.log(`收到请求: ${req.method} ${req.url}`);
-  next();
-});
+
 
 app.post('/upload/audio', uploadAudio.single('file'), async (req, res) => {
   let tagIds;
@@ -520,7 +522,43 @@ app.post('/search', (req, res) => {
   });
 });
 
+app.get("/recommend", (req, res) => {
+  db.query(
+    `SELECT * FROM audio_info ORDER BY RAND() LIMIT 15`,
+    (err, results) => {
+      if (err) {
+        console.error('查询失败:', err);
+        return res.status(500).json({ error: '数据库查询失败' });
+      }
 
+      res.json(results);
+    }
+  );
+});
+
+app.post("/category", (req, res) => {
+  const{ Id } = req.body;
+  
+  const query1 = 'SELECT file_id FROM file_tags WHERE tag_id = ?'
+  db.query(query1,[Id],(err,results) => {
+    if (err) {
+      console.error("查询 file_tags 错误：", err);
+      return res.status(500).json({ error: "数据库错误" });
+    }
+    if (results.length === 0) {
+      return res.json([]);
+    }
+    const fileIds = results.map(row => row.file_id);
+    const query2 = `SELECT * FROM audio_info WHERE id IN (${fileIds.map(() => '?').join(',')})`;
+    db.query(query2, fileIds, (err2, audioResults) => {
+      if (err2) {
+        console.error("查询 audio_info 错误：", err2);
+        return res.status(500).json({ error: "数据库错误" });
+      }
+      res.json(audioResults);
+    });
+  })
+});
 
 // 启动服务器
 app.listen(port, () => {
