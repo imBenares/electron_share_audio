@@ -29,13 +29,24 @@
             </div>
         </div>
         <div>
-            <ul v-for="audiolist in audiolists" :key="audiolist.audio_name" class="audiolist">
+            <ul v-for="(audiolist) in audiolists" :key="audiolist.id" class="audiolist">
                 <div id="audioname">
                     {{ audiolist.audio_name }}
                 </div>
                 <div class="listbtn">
                     <button id="playbtn" @click="previewplay(audiolist)">播放</button>
                     <button id="downloadbtn" @click="download(audiolist)">下载</button>
+                    <button id="commentbtn" @click="startcomment(audiolist.id)">评论</button>
+                </div>
+                <div v-if="iscommenting[audiolist.id]" class="comment-section">
+                <input
+                    type="text"
+                    v-model="audiolist.commentcontent"
+                    placeholder="输入你的评论..."
+                    class="comment-input"
+                />
+                    <button @click="submitcomment(audiolist.id)">确认发布</button>
+                    <button @click="cancelcomment(audiolist.id)">取消评论</button>
                 </div>
             </ul>
         </div>
@@ -53,6 +64,7 @@ let data = null;
 const searchQuery = ref(null);
 const audiolists = ref(null);
 const iscategory = ref(false);
+const iscommenting = ref([]);
 const categories = [
   { id: 1, name: "自然" },
   { id: 2, name: "科技" },
@@ -101,6 +113,16 @@ const download = async(audiolist) => {
   // 调用主进程方法（通过 preload 暴露的）
     const path = await fileAPI.selectFolder();
     await uploadAPI.downloadAudio(path,id,filename);
+}
+
+function startcomment(id){
+    iscommenting.value[id] = true;
+    //console.log(iscommenting.value[id]);
+}
+
+function cancelcomment(id){
+    iscommenting.value[id] = false;
+    //audiolist.commentcontent = null;
 }
 
 const recommend = async() => {
