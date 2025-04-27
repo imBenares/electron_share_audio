@@ -5,6 +5,8 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const multer = require("multer");
+const { useAttrs } = require('vue');
+const { log } = require('console');
 
 const app = express();
 const port = 3000;
@@ -575,6 +577,30 @@ app.get('/downloadaudio/:id',(req,res) => {
       }
   })
     
+  })
+})
+
+app.post('/submitcomment',(req,res) => {
+  const {Id,commentcontent,userId,username} = req.body;
+  const query = 'INSERT INTO comments (user_id,audio_id,content,user_name,created_at) VALUES (?,?,?,?,NOW())';
+  db.query(query,[userId,Id,commentcontent,username],(err,results) => {
+    if(err){
+      console.log('err:',err);
+    }else{
+      res.json({message:true});
+    }
+  })
+})
+
+app.post('/getcomment',(req,res) => {
+  const {Id} = req.body;
+  const query = 'SELECT comments.content,comments.created_at,user_information.username, user_information.headshotpath FROM comments JOIN user_information ON comments.user_id = user_information.id WHERE comments.audio_id = ?;'
+  db.query(query,[Id],(err,results) => {
+    if(err){
+      console.log(err);
+    }else{
+      res.json(results)
+    }
   })
 })
 

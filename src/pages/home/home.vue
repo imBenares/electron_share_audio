@@ -39,13 +39,25 @@
                     <button id="commentbtn" @click="startcomment(audiolist.id)">评论</button>
                 </div>
                 <div v-if="iscommenting[audiolist.id]" class="comment-section">
-                <input
-                    type="text"
-                    v-model="audiolist.commentcontent"
-                    placeholder="输入你的评论..."
-                    class="comment-input"
-                />
-                    <button @click="submitcomment(audiolist.id)">确认发布</button>
+                    <div class="commentscontainer">
+                        <ul v-for="(comment) in comments" :key="comment.id" class="comment">
+                            <div id="headshot">
+                                <div>
+                                    <img ref="headshot" id="headshotimg" :src="comment.headshotpath ? `local://0/${comment.headshotpath}` : defaultheadshot" />
+                                    <div id="username">{{ comment.username }}</div>
+                                    <div id="content">{{ comment.content }}</div>
+                                    <div id="created_at">{{ comment.created_at }}</div>
+                                </div>
+                            </div>
+                        </ul>
+                    </div>
+                    <input
+                        type="text"
+                        v-model="audiolist.commentcontent"
+                        placeholder="输入你的评论..."
+                        class="comment-input"
+                    />
+                    <button @click="submitcomment(audiolist,audiolist.id,audiolist.commentcontent)">确认发布</button>
                     <button @click="cancelcomment(audiolist.id)">取消评论</button>
                 </div>
             </ul>
@@ -59,10 +71,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted  } from 'vue';
 import { useFileStore,useFileName } from "@/store/usefilestore";
+import defaultheadshot from '/blankheadshot.png'
 
 let data = null;
 const searchQuery = ref(null);
 const audiolists = ref(null);
+const comments = ref();
 const iscategory = ref(false);
 const iscommenting = ref([]);
 const categories = [
@@ -115,14 +129,53 @@ const download = async(audiolist) => {
     await uploadAPI.downloadAudio(path,id,filename);
 }
 
-function startcomment(id){
+const startcomment = async(id) => {
+    iscommenting.value = [];
     iscommenting.value[id] = true;
-    //console.log(iscommenting.value[id]);
+    const response = await fetch("http://localhost:3000/getcomment",{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+                                Id: id
+                            })
+    });
+    const result = await response.json();
+    comments.value = result;
 }
 
 function cancelcomment(id){
     iscommenting.value[id] = false;
-    //audiolist.commentcontent = null;
+    
+}
+
+const submitcomment = async(audiolist,id,commentcontent) => {
+    const userId = localStorage.getItem("userId")
+    const username = localStorage.getItem("userName");
+    console.log(username);
+    
+    const response = await fetch("http://localhost:3000/submitcomment",{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+                                Id: id,
+                                commentcontent: commentcontent,
+                                userId: userId,
+                                username: username
+                            })
+    });
+    const result = await response.json();
+    if(result.message){
+        const response = await fetch("http://localhost:3000/getcomment",{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+                                Id: id
+                            })
+    });
+    const result = await response.json();
+    comments.value = result;
+    audiolist.commentcontent = null;
+    }
 }
 
 const recommend = async() => {
