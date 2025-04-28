@@ -19,7 +19,7 @@ import { RouterView  } from 'vue-router';
   
 </script>
 
-<style scoped>
+<style>
 .main-content{
     position: absolute;
     top: 0;
@@ -27,7 +27,7 @@ import { RouterView  } from 'vue-router';
     right: 0;
     bottom: 80px; /* 留出80px的空间 */
     overflow-y: auto; /* 使内容可滚动 */
-    
+    color: aliceblue;
 }
    
 #background{

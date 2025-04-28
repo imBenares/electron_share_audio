@@ -28,37 +28,42 @@
                 <button @click="uncategory">取消分类</button>
             </div>
         </div>
-        <div>
+        <div class="audiolists">
             <ul v-for="(audiolist) in audiolists" :key="audiolist.id" class="audiolist">
-                <div id="audioname">
-                    {{ audiolist.audio_name }}
-                </div>
-                <div class="listbtn">
-                    <button id="playbtn" @click="previewplay(audiolist)">播放</button>
-                    <button id="downloadbtn" @click="download(audiolist)">下载</button>
-                    <button id="commentbtn" @click="startcomment(audiolist.id)">评论</button>
+                <div class="audio-control">
+                    <div id="audioname">
+                        {{ audiolist.audio_name }}
+                    </div>
+                    <div class="listbtn">
+                        <button id="playbtn" @click="previewplay(audiolist)">播放</button>
+                        <button id="downloadbtn" @click="download(audiolist)">下载</button>
+                        <button id="commentbtn" @click="startcomment(audiolist.id)">评论</button>
+                    </div>
                 </div>
                 <div v-if="iscommenting[audiolist.id]" class="comment-section">
                     <div class="commentscontainer">
-                        <ul v-for="(comment) in comments" :key="comment.id" class="comment">
-                            <div id="headshot">
-                                <div>
-                                    <img ref="headshot" id="headshotimg" :src="comment.headshotpath ? `local://0/${comment.headshotpath}` : defaultheadshot" />
+                        <ul v-for="(comment) in comments" :key="comment.id" class="comments">
+                            <div class="comment">
+                                <img ref="headshot" id="headshotimg" :src="comment.headshotpath ? `local://0/${comment.headshotpath}` : defaultheadshot" />
+                                <div class="user-comment">
                                     <div id="username">{{ comment.username }}</div>
                                     <div id="content">{{ comment.content }}</div>
-                                    <div id="created_at">{{ comment.created_at }}</div>
+                                    <div id="created_at">{{ formatDate(comment.created_at) }}</div>
                                 </div>
                             </div>
+                            <div id="line"></div>
                         </ul>
                     </div>
                     <input
                         type="text"
                         v-model="audiolist.commentcontent"
-                        placeholder="输入你的评论..."
+                        placeholder="在此处留下你的评论..."
                         class="comment-input"
                     />
-                    <button @click="submitcomment(audiolist,audiolist.id,audiolist.commentcontent)">确认发布</button>
-                    <button @click="cancelcomment(audiolist.id)">取消评论</button>
+                    <div class="comment-control">
+                        <button @click="submitcomment(audiolist,audiolist.id,audiolist.commentcontent)">确认发布</button>
+                        <button @click="cancelcomment(audiolist.id)">取消评论</button>
+                    </div>
                 </div>
             </ul>
         </div>
@@ -208,6 +213,18 @@ const fetchByCategory = async (categoryId) => {
   audiolists.value = result;
 };
 
+function formatDate(created_at){
+    const date = new Date(created_at);
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+}
+
 onMounted(async () => {
     await recommend();
 });
@@ -218,7 +235,6 @@ onMounted(async () => {
 .search-container {
   position: sticky;
   top: 0;
-  
   z-index: 10;
   padding: 10px;
   
@@ -254,4 +270,120 @@ onMounted(async () => {
     width: 100%;
     background-color: #1c222b44;
 }
+.audiolists{
+    display: flex;
+    flex-direction: column;
+}
+
+.audiolist{
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.audio-control{
+    display: flex;
+    flex-direction: row;
+}
+
+.listbtn{
+    position: absolute;
+    right: 50px;
+}
+
+.commentscontainer{
+    max-height: 300px;
+    overflow-y: auto
+}
+
+.comments{
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.comment{
+    display: flex;
+    flex-direction: row;
+}
+
+.comment-input{
+    width: 100%;
+    height: 80px;
+
+    border-radius:10px;
+    border:0px solid;
+}
+
+.user-comment{
+    margin-left: 15px;
+}
+
+#headshotimg{
+    height: 50px;
+    border:1px solid #ffffff;
+    border-radius: 50%;
+    margin-top: 2px;
+}
+
+#username{
+    font-weight:bold;
+    color: #0b91ff;
+    margin-bottom: 5px;
+}
+
+#created_at{
+    font-size: 13px;
+    margin-top: 10px;
+    color: #afafaf;
+    margin-bottom: 20px;
+}
+
+#line{
+    height: 1px;
+    width: 100%;
+    background-color: #d5eaf860;
+    box-shadow: 0px 0px 1px #afafaf;
+}
+
+input[type="text"]::placeholder {
+  color: #999; /* placeholder 文字颜色 */
+  font-size: 14px; /* placeholder 文字大小 */
+  text-align: left; /* 控制 placeholder 水平对齐 */
+}
+
+
+/* 定义滚动条的整体宽度 */
+::-webkit-scrollbar {
+  width: 7px;  
+  height: 10px; 
+}
+
+/* 滚动条轨道 */
+::-webkit-scrollbar-track {
+  background: #f0f0f000; /* 轨道背景色 */
+  border-radius: 10px;
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+  background: #5e5e5e7c; /* 滑块的背景色 */
+  border-radius: 10px;
+}
+
+/* 滑块在鼠标悬停时的样式 */
+::-webkit-scrollbar-thumb:hover {
+  background: #8383837c; /* 滑块的背景色，鼠标悬停时 */
+}
+
+/* 滚动条按钮 */
+::-webkit-scrollbar-button {
+  display: none; /* 隐藏滚动条的按钮 */
+}
+
+/* 滚动条的角落（交汇处） */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 </style>
