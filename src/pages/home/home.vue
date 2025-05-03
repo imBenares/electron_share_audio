@@ -28,44 +28,46 @@
                 <button @click="uncategory">取消分类</button>
             </div>
         </div>
-        <div class="audiolists">
-            <ul v-for="(audiolist) in audiolists" :key="audiolist.id" class="audiolist">
-                <div class="audio-control">
-                    <div id="audioname">
-                        {{ audiolist.audio_name }}
+        <div class="audio">
+            <div class="audiolists">
+                <ul v-for="(audiolist) in audiolists" :key="audiolist.id" class="audiolist">
+                    <div class="audio-control" ref="audiocontrol" :class="{ 'highlight': iscommenting[audiolist.id] }">
+                        <div id="audioname">
+                            {{ audiolist.audio_name }}
+                        </div>
+                        <div class="listbtn">
+                            <button id="playbtn" @click="previewplay(audiolist)">播放</button>
+                            <button id="downloadbtn" @click="download(audiolist)">下载</button>
+                            <button id="commentcontrolbtn" @click="startcomment(audiolist.id)">评论</button>
+                        </div>
                     </div>
-                    <div class="listbtn">
-                        <button id="playbtn" @click="previewplay(audiolist)">播放</button>
-                        <button id="downloadbtn" @click="download(audiolist)">下载</button>
-                        <button id="commentbtn" @click="startcomment(audiolist.id)">评论</button>
-                    </div>
-                </div>
-                <div v-if="iscommenting[audiolist.id]" class="comment-section">
-                    <div class="commentscontainer">
-                        <ul v-for="(comment) in comments" :key="comment.id" class="comments">
-                            <div class="comment">
-                                <img ref="headshot" id="headshotimg" :src="comment.headshotpath ? `local://0/${comment.headshotpath}` : defaultheadshot" />
-                                <div class="user-comment">
-                                    <div id="username">{{ comment.username }}</div>
-                                    <div id="content">{{ comment.content }}</div>
-                                    <div id="created_at">{{ formatDate(comment.created_at) }}</div>
+                    <div v-if="iscommenting[audiolist.id]" class="comment-section">
+                        <div class="commentscontainer">
+                            <ul v-for="(comment) in comments" :key="comment.id" class="comments">
+                                <div class="comment">
+                                    <img ref="headshot" id="headshotimg" :src="comment.headshotpath ? `local://0/${comment.headshotpath}` : defaultheadshot" />
+                                    <div class="user-comment">
+                                        <div id="username">{{ comment.username }}</div>
+                                        <div id="content">{{ comment.content }}</div>
+                                        <div id="created_at">{{ formatDate(comment.created_at) }}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="line"></div>
-                        </ul>
+                                <div id="line"></div>
+                            </ul>
+                        </div>
+                        <textarea
+                            type="text"
+                            v-model="audiolist.commentcontent"
+                            placeholder="在此处留下你的评论..."
+                            class="comment-input"
+                        ></textarea>
+                        <div class="comment-control">
+                            <button @click="submitcomment(audiolist,audiolist.id,audiolist.commentcontent)" id="submitcommentbtn">确认发布</button>
+                            <button @click="cancelcomment(audiolist.id)" id="canclecommentbtn">取消评论</button>
+                        </div>
                     </div>
-                    <input
-                        type="text"
-                        v-model="audiolist.commentcontent"
-                        placeholder="在此处留下你的评论..."
-                        class="comment-input"
-                    />
-                    <div class="comment-control">
-                        <button @click="submitcomment(audiolist,audiolist.id,audiolist.commentcontent)">确认发布</button>
-                        <button @click="cancelcomment(audiolist.id)">取消评论</button>
-                    </div>
-                </div>
-            </ul>
+                </ul>
+            </div>
         </div>
         <div>
             <button class="refresh" @click="refresh">刷新</button>
@@ -84,6 +86,7 @@ const audiolists = ref(null);
 const comments = ref();
 const iscategory = ref(false);
 const iscommenting = ref([]);
+const audiocontrol = ref(null);
 const categories = [
   { id: 1, name: "自然" },
   { id: 2, name: "科技" },
@@ -146,6 +149,7 @@ const startcomment = async(id) => {
     });
     const result = await response.json();
     comments.value = result;
+    audiocontrol.value[id].style['background-color'] = '#8585853a';
 }
 
 function cancelcomment(id){
@@ -237,12 +241,19 @@ onMounted(async () => {
   top: 0;
   z-index: 10;
   padding: 10px;
-  
+  background-color: #363761be;
 }
 
 .search-input {
-  padding: 5px;
+  padding: 0px 30px;
   margin-right: 10px;
+  margin-left: 10px;
+  height: 35px;
+
+  border: 0px solid;
+  border-radius: 20px;
+  background-color: #1f20209f;
+  width: 400px;
 }
 
 .result-container {
@@ -250,14 +261,7 @@ onMounted(async () => {
   overflow-y: auto;
   padding: 10px;
 }
-
-.audiolist {
-    display: flex;
-    margin-bottom: 15px;
-    padding: 10px;
-    list-style: none;
-}
-   
+ 
 .refresh{
     position: fixed;
     bottom: 120px;
@@ -270,6 +274,7 @@ onMounted(async () => {
     width: 100%;
     background-color: #1c222b44;
 }
+
 .audiolists{
     display: flex;
     flex-direction: column;
@@ -278,13 +283,22 @@ onMounted(async () => {
 .audiolist{
     display: flex;
     flex-direction: column;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin: 0px;
+    padding: 0px;
+    border-radius: 7px;
+    list-style: none;
 }
 
 .audio-control{
     display: flex;
     flex-direction: row;
+    padding: 20px 20px;
+    margin: 0px 20px;
+    border-radius: 7px;
+}
+
+.audio-control:hover{
+    background-color: #8585853a;
 }
 
 .listbtn{
@@ -292,14 +306,22 @@ onMounted(async () => {
     right: 50px;
 }
 
+.comment-section{
+    margin: 0px 40px;
+    padding:10px 30px 5px 30px;
+    border-radius: 0px 0px 7px 7px;
+    background-color: #3236385d;
+}
+
 .commentscontainer{
     max-height: 300px;
-    overflow-y: auto
+    overflow-y: auto;
 }
 
 .comments{
     margin-top: 20px;
     margin-bottom: 20px;
+    padding-left: 0px;
 }
 
 .comment{
@@ -308,11 +330,19 @@ onMounted(async () => {
 }
 
 .comment-input{
+    box-sizing: border-box;
     width: 100%;
     height: 80px;
-
-    border-radius:10px;
+    border-radius:7px;
     border:0px solid;
+    padding: 15px;
+    resize: none;
+    background-color: #23242554;
+}
+
+.comment-input:focus{
+    outline: none;
+    background-color: #1b1c1d54;
 }
 
 .user-comment{
@@ -328,7 +358,7 @@ onMounted(async () => {
 
 #username{
     font-weight:bold;
-    color: #0b91ff;
+    color: #3b94dd;
     margin-bottom: 5px;
 }
 
@@ -346,10 +376,30 @@ onMounted(async () => {
     box-shadow: 0px 0px 1px #afafaf;
 }
 
+button{
+    border:0px solid;
+    padding: 8px 20px;
+    border-radius: 20px;
+    background-color: #212324a9;
+    color: #d0d4d6;
+}
+
+#submitcommentbtn{
+    margin: 10px 0px;
+}
+
+#canclecommentbtn{
+    margin-left: 50px;
+}
+
 input[type="text"]::placeholder {
   color: #999; /* placeholder 文字颜色 */
   font-size: 14px; /* placeholder 文字大小 */
   text-align: left; /* 控制 placeholder 水平对齐 */
+}
+
+.highlight {
+    background-color: #8585853a;
 }
 
 
