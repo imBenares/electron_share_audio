@@ -43,6 +43,7 @@
                     </div>
                     <div v-if="iscommenting[audiolist.id]" class="comment-section">
                         <div class="commentscontainer">
+                            <div v-if="nan_comment">这儿什么都没有......</div>
                             <ul v-for="(comment) in comments" :key="comment.id" class="comments">
                                 <div class="comment">
                                     <img ref="headshot" id="headshotimg" :src="comment.headshotpath ? `local://0/${comment.headshotpath}` : defaultheadshot" />
@@ -87,6 +88,7 @@ const comments = ref();
 const iscategory = ref(false);
 const iscommenting = ref([]);
 const audiocontrol = ref(null);
+const nan_comment = ref(false);
 const categories = [
   { id: 1, name: "自然" },
   { id: 2, name: "科技" },
@@ -148,6 +150,9 @@ const startcomment = async(id) => {
                             })
     });
     const result = await response.json();
+    if(result.length === 0){
+      nan_comment.value = true;
+    }
     comments.value = result;
     audiocontrol.value[id].style['background-color'] = '#8585853a';
 }

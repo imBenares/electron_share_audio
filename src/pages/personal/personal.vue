@@ -106,7 +106,24 @@
       <div class="listbtn">
           <button id="playbtn" @click="previewplay(audiolist)">播放</button>
           <button id="deletebtn" @click="deleteaudio(audiolist)">删除</button>
-        </div>
+          <button id="commentbtn" @click="comment(audiolist.id)">评论</button>
+      </div>
+      <div v-if="iscommenting[audiolist.id]" class="comment-section">
+          <div class="commentscontainer">
+            <div v-if="nan_comment">这儿什么都没有......</div>
+              <ul v-for="(comment) in comments" :key="comment.id" class="comments">
+                  <div class="comment">
+                      <img ref="headshot" id="commentheadshotimg" :src="comment.headshotpath ? `local://0/${comment.headshotpath}` : defaultheadshot" />
+                      <div class="user-comment">
+                          <div id="username">{{ comment.username }}</div>
+                          <div id="content">{{ comment.content }}</div>
+                          <div id="created_at">{{ formatDate(comment.created_at) }}</div>
+                      </div>
+                  </div>
+                  <div id="line"></div>
+              </ul>
+          </div>
+      </div>
     </ul>
   </div>
 
@@ -186,6 +203,9 @@ const cropperInstance = ref(null);
 const isEditHeadShot = ref(false);
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const headshot = ref(null);
+const comments = ref();
+const iscommenting = ref([]);
+const nan_comment = ref(false);
 
 const audiolists = ref();
 //该变量用于创建一个音频列表
@@ -436,6 +456,37 @@ const getHeadShot = async() => {
   if(imagepath){
     headshot.value.src = `local://0/${imagepath}`;
   }
+}
+
+const comment = async(id) => {
+    iscommenting.value = [];
+    iscommenting.value[id] = true;
+    const response = await fetch("http://localhost:3000/getcomment",{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+                                Id: id
+                            })
+    });
+    const result = await response.json();
+    if(result.length === 0){
+      nan_comment.value = true;
+    }else{
+      nan_comment.value = false;
+    }
+    comments.value = result;
+}
+
+function formatDate(created_at){
+    const date = new Date(created_at);
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
 }
 
 watch(()=>image.value,(newImage)=>{
@@ -904,6 +955,7 @@ const canclesave = async() => {
 
 .audiolist{
   display: flex;
+  flex-direction: column;
   padding-left: 0px;
 }
 
@@ -917,5 +969,75 @@ const canclesave = async() => {
 .listbtn{
   position: absolute;
   right: 20px;
+}
+
+.comment-section{
+    margin: 0px 40px;
+    padding:10px 30px 5px 30px;
+    border-radius: 0px 0px 7px 7px;
+    background-color: #3236385d;
+}
+
+.commentscontainer{
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.comments{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding-left: 0px;
+}
+
+.comment{
+    display: flex;
+    flex-direction: row;
+}
+
+.comment-input{
+    box-sizing: border-box;
+    width: 100%;
+    height: 80px;
+    border-radius:7px;
+    border:0px solid;
+    padding: 15px;
+    resize: none;
+    background-color: #23242554;
+}
+
+.comment-input:focus{
+    outline: none;
+    background-color: #1b1c1d54;
+}
+
+.user-comment{
+    margin-left: 15px;
+}
+
+#commentheadshotimg{
+    height: 50px;
+    border:1px solid #ffffff;
+    border-radius: 50%;
+    margin-top: 2px;
+}
+
+#username{
+    font-weight:bold;
+    color: #3b94dd;
+    margin-bottom: 5px;
+}
+
+#created_at{
+    font-size: 13px;
+    margin-top: 10px;
+    color: #afafaf;
+    margin-bottom: 20px;
+}
+
+#line{
+    height: 1px;
+    width: 100%;
+    background-color: #d5eaf860;
+    box-shadow: 0px 0px 1px #afafaf;
 }
 </style>
