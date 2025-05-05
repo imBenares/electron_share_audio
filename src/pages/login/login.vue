@@ -55,11 +55,18 @@ const handleLogin = async () => {
             });
            //接收数据库请求
             const data = await response.json();
+            console.log(data);
+            
             if (data.success) {
                 localStorage.setItem("isLoggedIn", "true");
                 localStorage.setItem("userId", data.id);
                 localStorage.setItem("userName", data.name);
-                router.push("/mainpage"); 
+                localStorage.setItem("key", data.key);
+                if (data.key === 1) {
+                    router.push("/admin"); // 管理员跳转
+                } else {
+                    router.push("/mainpage"); // 普通用户跳转
+                } 
             } else {
                 tip.value = "账号或密码输入错误"
                 errortip.value.style.visibility = '';

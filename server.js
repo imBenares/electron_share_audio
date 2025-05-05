@@ -212,8 +212,7 @@ app.post('/login', (req, res) => {
         }
         if (results.length > 0) {
             //console.log(results);
-          
-            res.json({ id: results[0].id, name:results[0].username, success: true, message: '登录成功' });
+            res.json({ id: results[0].id, name:results[0].username, key:results[0].is_admin, success: true, message: '登录成功' });
         } else {
             res.json({ success: false, message: '用户名或密码错误' });
         }
@@ -471,20 +470,41 @@ app.get('/stream/audio/:fileId', (req, res) => {
 });
 
 
-app.post('/deleteaudio',(req,res) => {
-  const {fileId} = req.body;
-  const query = 'UPDATE audio_info SET is_deleted = 1 WHERE id = ?';
-  db.query(query,[fileId],(err,results) => {
-    //console.log(results);
-    if(err){
-      console.log(err);
-      res.json({success:false});
-    }else{
-      res.json({success:true});
+app.post('/deleteaudio', (req, res) => {
+  const { fileId } = req.body;
+
+  // 先更新数据库记录
+  const updateQuery = 'UPDATE audio_info SET is_deleted = 1 WHERE id = ?';
+  db.query(updateQuery, [fileId], (err, updateResults) => {
+    if (err) {
+      console.log('数据库更新失败:', err);
+      return res.json({ success: false, message: '数据库更新失败' });
     }
-  })
-  
-})
+
+    // 查询音频文件路径
+    const getFileQuery = 'SELECT audiopath FROM audio_info WHERE id = ?';
+    db.query(getFileQuery, [fileId], (err, results) => {
+      if (err || results.length === 0) {
+        console.log('查询文件路径失败:', err || '无结果');
+        return res.json({ success: false, message: '查询文件失败' });
+      }
+      console.log(results);
+      
+      const filePath = results[0].audiopath;
+
+      fs.unlink(filePath, (unlinkErr) => {
+        if (unlinkErr) {
+          console.error('文件删除失败:', unlinkErr);
+          return res.json({ success: false, message: '文件删除失败' });
+        }
+
+        console.log('文件删除成功:', filePath);
+        res.json({ success: true });
+      });
+    });
+  });
+});
+
 
 app.post('/search', (req, res) => {
 
