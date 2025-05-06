@@ -72,9 +72,13 @@ onMounted(()=>{
 }
 
 .admin-content{
+    position: absolute;
+    top: 60px;
+    left: 0px;
+    right: 0px;
     bottom: 80px; /* 留出80px的空间 */
     overflow-y: auto; /* 使内容可滚动 */
-    background-color: #000000;
+    color: #000000;
 }
 
 </style>

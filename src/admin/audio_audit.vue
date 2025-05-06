@@ -1,20 +1,37 @@
 <template>
-<div class="test_block">
+    <div class="audiolists">
+        <ul v-for="(audiolist) in audiolists" :key="audiolist.id" class="audiolist">
+            <div>
+                <div id="audioname">
+                    {{ audiolist.audio_name }}
+                </div>
+            </div>
+        </ul>
+    </div>
 
-</div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onUnmounted  } from 'vue';
+
+const audiolists = ref(null);
+
+const recommend = async() => {
+    const response = await fetch("http://localhost:3000/recent-audio");
+    const result = await response.json();
+    console.log(result);
+    
+    audiolists.value = result.data; 
+}
+
+onMounted(async () => {
+    await recommend();
+});
 
 </script>
 
 <style scoped>
 
-.test_block{
-    background-color: #ff0000;
-    position: absolute;
-    height: 200px;
-    width: 100px;
-}
+
 
 </style>

@@ -624,6 +624,25 @@ app.post('/getcomment',(req,res) => {
   })
 })
 
+app.get('/recent-audio', (req, res) => {
+  const query = `
+    SELECT id, audio_name, upload_time
+    FROM audio_info
+    WHERE is_deleted = 0
+    ORDER BY upload_time DESC
+    LIMIT 100
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('查询失败:', err);
+      res.status(500).json({ success: false, message: '数据库查询错误' });
+    } else {
+      res.json({ success: true, data: results });
+    }
+  });
+});
+
 // 启动服务器
 app.listen(port, () => {
     console.log(`服务器运行在 http://localhost:${port}`);
