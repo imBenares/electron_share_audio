@@ -7,6 +7,9 @@ import personal from "@/pages/personal/personal.vue";
 import register from "@/pages/register/register.vue";
 import edit from "@/pages/edit/edit.vue";
 import admin from '@/admin/admin.vue';
+import audio_audit from '@/admin/audio_audit.vue';
+import comment_audit from '@/admin/comment_audit.vue';
+import user_audit from '@/admin/user_audit.vue';
 
 const routes=[
     {
@@ -45,15 +48,31 @@ const routes=[
                 name:'edit',
                 component:edit,
             },
+            
         ]
     },
     {
         path:'/admin',
         name:'admin',
         component:admin,
-    },
-    
-    
+        children:[
+            {
+                path:'/audio_audit',
+                name:'audio_audit',
+                component:audio_audit,
+            },
+            {
+                path:'/comment_audit',
+                name:'comment_audit',
+                component:comment_audit,
+            },
+            {
+                path:'/user_audit',
+                name:'user_audit',
+                component:user_audit,
+            }
+        ]
+    },  
 ]
 
 const router = createRouter({
