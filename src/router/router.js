@@ -81,10 +81,6 @@ const router = createRouter({
 });
 
 router.beforeEach((to,from,next) => {
-    if (to.path === '/' || to.path === '/login') {
-        // 每次访问登录页前清空登录状态
-        localStorage.clear()
-      }
     const isAuthenticated = localStorage.getItem("isLoggedIn");
     if (!isAuthenticated && !["/",  "/register","/login"].includes(to.path)) {
       next("/"); // 未登录，重定向到登录页面

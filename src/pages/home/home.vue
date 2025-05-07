@@ -241,12 +241,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+
+.audio{
+    position: absolute;
+    top:60px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    overflow-y: auto;
+}
 .search-container {
   position: sticky;
   top: 0;
   z-index: 10;
   padding: 10px;
-  background-color: #363761be;
 }
 
 .search-input {

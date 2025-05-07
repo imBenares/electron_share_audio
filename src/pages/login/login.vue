@@ -2,11 +2,11 @@
     <div class="login">
         <div class="logininput">
             <div>账号:</div>
-            <input ref="inputRef" type="text" v-model="username"  placeholder="请输入账号"/>
+            <input ref="inputRef" type="text" @keyup.enter="handleLogin" v-model="username"  placeholder="请输入账号"/>
         </div>
         <div class="passwordinput">
             <div>密码:</div>
-            <input type="password" v-model="password"  placeholder="请输入密码"/>
+            <input type="password" @keyup.enter="handleLogin" v-model="password"  placeholder="请输入密码"/>
         </div>
         <div ref="errortip" id="errortip">{{ tip }}</div>
         <button id="loginbuttom" @click="handleLogin">登录</button>
@@ -84,15 +84,11 @@ const handleLogin = async () => {
 };
 
 onMounted(() => {
+  localStorage.clear()
   inputRef.value?.focus();
   errortip.value.style.visibility = 'hidden';
 });
-    
-window.addEventListener('keydown', (event) => {
-    if(event.key === 'Enter'){
-        handleLogin();
-    }
-});
+
 
 </script>
 
