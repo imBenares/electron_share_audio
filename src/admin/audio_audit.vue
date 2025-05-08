@@ -74,8 +74,25 @@ const deleteaudio = async(audiolist) => {
 }
 
 const saveRename = async (audiolist) => {
-  console.log(`准备重命名音频 ${audiolist.id} 为 ${editName.value}`);
-  // TODO: 调用 API 保存修改（此处先保留为占位）
+  const editname = editName.value;
+  const fileId = audiolist.id;
+  const userid = localStorage.getItem("userId")
+  const response = await fetch("http://localhost:3000/saverename",{
+        method: "POST",
+        headers:  { "Content-Type": "application/json" },
+        body: JSON.stringify({  
+                            editname: editname ,
+                            fileId: fileId ,
+                            userid: userid,
+                            })
+  })
+  data = await response.json();
+  if(data.success){
+    const index = audiolists.value.findIndex(item => item.id === fileId);
+    if (index !== -1) {
+      audiolists.value[index].audio_name = editname;
+    }
+  }
   editingId.value = null;
 };
 

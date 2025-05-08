@@ -244,7 +244,7 @@ app.post('/register', async (req, res) => {
     const userId = loginResult.insertId; // 获取插入的用户 ID
 
     // 插入 user_information 表
-    const [infoResult] = await db.promise().query("INSERT INTO user_information (user_id, id, username, gender, birthdate, email, tel) VALUES (?, ?, ?, ?, ?, ?, ?)", [userId, userId, username, gender, birthdate, email, tel]);
+    const [infoResult] = await db.promise().query("INSERT INTO user_information (user_id, id, username, gender, birthdate, email, tel, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [userId, userId, username, gender, birthdate, email, tel, 0]);
     console.log('插入 user_information 表成功, info_result:', infoResult);
 
     // 提交事务
@@ -641,6 +641,29 @@ app.get('/recent-audio', (req, res) => {
       res.json({ success: true, data: results });
     }
   });
+});
+
+app.post('/saverename', (req, res) => {
+    const {editname,userid,fileId} = req.body;
+    const query_1 = 'SELECT is_admin FROM user_information WHERE id = ?';
+    db.query(query_1,[userid],(err,results) => {
+      if(err){
+        console.log(err);
+        return;
+      }
+      if(results[0].is_admin === 1){
+        const query_2 = 'UPDATE audio_info SET audio_name = ? WHERE id = ?';
+        db.query(query_2,[editname,fileId],(err,results) => {
+          if(err){
+            console.log(err);
+          }else{
+            res.json({success: true});
+          }
+        })
+      }else{
+        res.json({success: false});
+      }
+    })
 });
 
 // 启动服务器
