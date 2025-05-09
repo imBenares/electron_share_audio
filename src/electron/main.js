@@ -314,15 +314,28 @@ function createWindow(){
         contentType: 'audio/mpeg'
       });
       formData.append('fileInfo', JSON.stringify(fileinfo));
-      const response = await axios.post('http://127.0.0.1:3000/upload/audio', formData, {
-        headers: {
-          ...formData.getHeaders(),
-          'Content-Length': formData.getLengthSync()
-        },
-        timeout: 60000
+      const response = await fetch(`http://127.0.0.1:3000/permission`, { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userid: fileinfo.userid }), 
       });
-      fs.unlinkSync(tempPath);
-      return response.data;
+      data = await response.json();
+      //console.log(data.message[0]);
+      
+      if(data.message[0].upload_permissions === 0){
+        fs.unlinkSync(tempPath);
+        return data.message[0].upload_permissions;
+      }else{
+        const response = await axios.post('http://127.0.0.1:3000/upload/audio', formData, {
+          headers: {
+            ...formData.getHeaders(),
+            'Content-Length': formData.getLengthSync()
+          },
+          timeout: 60000
+        });
+        fs.unlinkSync(tempPath);
+        return response.data;
+      }
     } catch (error) {
       if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
       throw new Error(`上传失败：${error.message}`);

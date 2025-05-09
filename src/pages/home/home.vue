@@ -165,30 +165,43 @@ function cancelcomment(id){
 const submitcomment = async(audiolist,id,commentcontent) => {
     const userId = localStorage.getItem("userId")
     const username = localStorage.getItem("userName");
-    console.log(username);
+    const response = await fetch("http://localhost:3000/permission",{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+                                userid: userId,
+                            })
+    })
+    const data = await response.json();
+    console.log(data.message[0].comment_permissions);
     
-    const response = await fetch("http://localhost:3000/submitcomment",{
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-                                Id: id,
-                                commentcontent: commentcontent,
-                                userId: userId,
-                                username: username
-                            })
-    });
-    const result = await response.json();
-    if(result.message){
-        const response = await fetch("http://localhost:3000/getcomment",{
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-                                Id: id
-                            })
-    });
-    const result = await response.json();
-    comments.value = result;
-    audiolist.commentcontent = null;
+    if(data.message[0].comment_permissions === 0){
+        alert("您没有评论权限！");
+        return;
+    }else{
+        const response = await fetch("http://localhost:3000/submitcomment",{
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                                    Id: id,
+                                    commentcontent: commentcontent,
+                                    userId: userId,
+                                    username: username
+                                })
+        });
+        const result = await response.json();
+        if(result.message){
+            const response = await fetch("http://localhost:3000/getcomment",{
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                                    Id: id
+                                })
+        });
+        const result = await response.json();
+        comments.value = result;
+        audiolist.commentcontent = null;
+        }
     }
 }
 

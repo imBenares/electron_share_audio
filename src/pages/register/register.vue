@@ -129,14 +129,14 @@ const handleRegister = async () => {
             //接收数据库请求
         const data = await response.json();
         
-        if (data.success) {
+        if (data.message == 1) {
             tip.value = "注册成功，即将返回登录";
             errortip.value.style.visibility = '';
             setTimeout(() => {
                 router.push("/");
             }, 2000);
         } 
-        if(data.message==1){
+        if(data.message == 0){
             tip.value = "用户名已被注册";
             errortip.value.style.visibility = '';
         }

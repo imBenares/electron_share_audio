@@ -386,6 +386,12 @@ const confirmuploadBtn = async() => {
     console.log(fileInfo);
     
     const response = await uploadAPI.uploadAudio(filemessage.destPath[0],fileInfo);
+    console.log(response);
+    if(response === 0){
+        alert("您没有上传权限！");
+        return;
+    }
+    
     if(response.success){
         await fileAPI.deleteFile(filemessage.destPath[0]);
         isOnUpload.value = false;

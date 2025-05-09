@@ -69,7 +69,19 @@ const uploadImage = multer({
   limits: { fileSize: 50 * 1024 * 1024 }
 });
 
+app.post('/permission',async(req,res) => {
+  const {userid} = req.body;
+  const query = 'SELECT upload_permissions,comment_permissions FROM user_information WHERE id = ?';
+  db.query(query,[userid],(err,results) => {
+    if(err){
+      console.log(err);
+      return;
+    }else{
+      res.json({message: results});
+    }
+  })
 
+})
 
 app.post('/upload/audio', uploadAudio.single('file'), async (req, res) => {
   let tagIds;
@@ -116,7 +128,20 @@ app.post('/upload/audio', uploadAudio.single('file'), async (req, res) => {
           db.query(delete_tags,[value],(err,results) => {
             if(results){
               //console.log(results);
-              const update = 'UPDATE audio_info SET audio_name = ?,user_name = ?, user_id = ?, size = ?, duratime = ?, bitrate = ?, samplerate = ?, channels = ?, private = ?, upload_time = NOW(), audiopath = ?, is_deleted = 0 WHERE id= ?';
+              const update = `UPDATE audio_info SET 
+                              audio_name = ?,
+                              user_name = ?, 
+                              user_id = ?, 
+                              size = ?, 
+                              duratime = ?, 
+                              bitrate = ?, 
+                              samplerate = ?, 
+                              channels = ?, 
+                              private = ?, 
+                              upload_time = NOW(), 
+                              audiopath = ?, 
+                              is_deleted = 0 
+                              WHERE id= ?`;
               db.query(update,[audioname, username, userid, size,  duratime, bitrate, samplerate, channels, private, filepath, value],(err,results) => {
                 if(results){
                   console.log(results);
@@ -130,7 +155,20 @@ app.post('/upload/audio', uploadAudio.single('file'), async (req, res) => {
             }
           })
         }else{
-          const insert = 'INSERT INTO audio_info (audio_name, user_name, user_id, size, duratime, bitrate, samplerate, channels, private, upload_time, audiopath, is_deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)'
+          const insert = `INSERT INTO audio_info (
+                          audio_name, 
+                          user_name, 
+                          user_id, 
+                          size, 
+                          duratime, 
+                          bitrate, 
+                          samplerate, 
+                          channels, 
+                          private, 
+                          upload_time, 
+                          audiopath, 
+                          is_deleted) 
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`;
           db.query(insert,[audioname, username, userid, size,  duratime, bitrate, samplerate, channels, private, filepath, 0],(err,results) =>{
             if(results){
               console.log(results);
@@ -173,6 +211,8 @@ app.post('/upload/audio', uploadAudio.single('file'), async (req, res) => {
   }
 
 })
+
+
 
 app.post('/upload/image',uploadImage.single('file'),async(req, res) => {
   console.log(req.body.userid);
@@ -222,40 +262,38 @@ app.post('/login', (req, res) => {
 
 app.post('/register', async (req, res) => {
   const { username, password, gender, birthdate, email, tel } = req.body;
+  const select = 'SELECT * FROM user_login WHERE username = ?';
 
   try {
     // 查询用户名是否已被注册
-    const [results] = await db.promise().query('SELECT * FROM user_login WHERE username = ?', [username]);
-    console.log('查询结果:', results);
+    const [results] = await db.promise().query(select, [username]);
     if (results.length > 0) {
-      return res.json({ message: 1 }); // 用户已注册
+      return res.json({ message: 0 }); // 用户已注册
     }
 
     // 开始事务
     await db.promise().beginTransaction();
-    console.log('开启事务');
 
     // 插入 user_login 表
-    const [loginResult] = await db.promise().query("INSERT INTO user_login (username, password) VALUES (?, ?)", [username, password]);
-    console.log('插入 user_login 表成功, user_id:', loginResult.insertId); // 输出插入的 ID
+    const insert_login = 'INSERT INTO user_login (username, password) VALUES (?, ?)';
+    const [loginResult] = await db.promise().query(insert_login, [username, password]);
     if (!loginResult.insertId) {
-      throw new Error("插入 user_login 失败"); // 如果没有获取到 insertId，抛出错误
+      throw new Error("插入 user_login 失败");
     }
-    const userId = loginResult.insertId; // 获取插入的用户 ID
+    const userId = loginResult.insertId;
 
     // 插入 user_information 表
-    const [infoResult] = await db.promise().query("INSERT INTO user_information (user_id, id, username, gender, birthdate, email, tel, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [userId, userId, username, gender, birthdate, email, tel, 0]);
-    console.log('插入 user_information 表成功, info_result:', infoResult);
+    const insert_info = 'INSERT INTO user_information (user_id, id, username, gender, birthdate, email, tel, is_admin ,upload_permissions ,comment_permissions) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?)';
+    const [infoResult] = await db.promise().query(insert_info, [userId, userId, username, gender, birthdate, email, tel, 0,1,1]);
 
     // 提交事务
     await db.promise().commit();
-    console.log('事务提交成功');
-    return res.json({ success: true });
+    res.json({ message: 1 }); // 注册成功
 
   } catch (error) {
     console.error('发生错误:', error);
     await db.promise().rollback(); // 回滚事务
-    return res.json({ message: "用户注册失败", error: error.message });
+    res.json({ message: "用户注册失败", error: error.message });
   }
 });
 
@@ -626,11 +664,17 @@ app.post('/getcomment',(req,res) => {
 
 app.get('/recent-audio', (req, res) => {
   const query = `
-    SELECT id, audio_name, upload_time
-    FROM audio_info
-    WHERE is_deleted = 0
-    ORDER BY upload_time DESC
-    LIMIT 100
+                SELECT 
+                audio_info.id, 
+                audio_info.audio_name, 
+                audio_info.upload_time,
+                audio_info.user_name,
+                user_information.headshotpath
+                FROM audio_info
+                JOIN user_information ON audio_info.user_id = user_information.user_id
+                WHERE audio_info.is_deleted = 0
+                ORDER BY audio_info.upload_time DESC
+                LIMIT 100;
   `;
 
   db.query(query, (err, results) => {
@@ -664,6 +708,30 @@ app.post('/saverename', (req, res) => {
         res.json({success: false});
       }
     })
+});
+
+app.get('/recent-comment', (req, res) => {
+  const query = `
+            SELECT 
+            comments.id, 
+            comments.content, 
+            comments.created_at, 
+            comments.user_id, 
+            comments.user_name,
+            user_information.headshotpath
+            FROM comments
+            JOIN user_information ON comments.user_id = user_information.user_id
+            ORDER BY comments.created_at DESC
+            LIMIT 100;
+      `;
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('查询失败:', err);
+      res.status(500).json({ success: false, message: '数据库查询错误' });
+    } else {
+      res.json({ success: true, data: results });
+    }
+  });
 });
 
 // 启动服务器

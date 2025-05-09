@@ -68,3 +68,40 @@ app.post('/upload/audio', uploadAudio.single('file'), async (req, res) => {
   
 });
 </script>
+
+<!-- const { username, password, gender, birthdate, email, tel } = req.body;
+
+  try {
+    // 查询用户名是否已被注册
+    const [results] = await db.promise().query('SELECT * FROM user_login WHERE username = ?', [username]);
+    console.log('查询结果:', results);
+    if (results.length > 0) {
+      return res.json({ message: 1 }); // 用户已注册
+    }
+
+    // 开始事务
+    await db.promise().beginTransaction();
+    console.log('开启事务');
+
+    // 插入 user_login 表
+    const [loginResult] = await db.promise().query("INSERT INTO user_login (username, password) VALUES (?, ?)", [username, password]);
+    console.log('插入 user_login 表成功, user_id:', loginResult.insertId); // 输出插入的 ID
+    if (!loginResult.insertId) {
+      throw new Error("插入 user_login 失败"); // 如果没有获取到 insertId，抛出错误
+    }
+    const userId = loginResult.insertId; // 获取插入的用户 ID
+
+    // 插入 user_information 表
+    const [infoResult] = await db.promise().query("INSERT INTO user_information (user_id, id, username, gender, birthdate, email, tel, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [userId, userId, username, gender, birthdate, email, tel, 0]);
+    console.log('插入 user_information 表成功, info_result:', infoResult);
+
+    // 提交事务
+    await db.promise().commit();
+    console.log('事务提交成功');
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('发生错误:', error);
+    await db.promise().rollback(); // 回滚事务
+    return res.json({ message: "用户注册失败", error: error.message });
+  } -->

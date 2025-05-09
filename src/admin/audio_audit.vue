@@ -3,6 +3,17 @@
         <ul v-for="(audiolist) in audiolists" :key="audiolist.id" class="audiolist">
             <div id="audio_info">
                 <div id="audioname">
+                        <div>
+                            <img ref="headshot" id="headshotimg" :src="audiolist.headshotpath ? `local://0/${audiolist.headshotpath}` : defaultheadshot" />
+                        </div>
+                    <div class="user-comment">
+                            <div>
+                                {{ audiolist.user_name }}
+                            </div>
+                            <div>
+                                {{ audiolist.content }}
+                            </div>
+                        </div>
                     <div v-if="editingId === audiolist.id">
                         <input
                             v-model="editName"
@@ -28,6 +39,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted  } from 'vue';
 import { useFileStore,useFileName } from "@/store/usefilestore";
+import defaultheadshot from '/blankheadshot.png'
 
 let data = null;
 const audiolists = ref(null);
@@ -117,6 +129,13 @@ onMounted(async () => {
 .audio_control{
     position: absolute;
     right: 50px;
+}
+
+#headshotimg{
+    height: 50px;
+    border:1px solid #ffffff;
+    border-radius: 50%;
+    margin-top: 2px;
 }
 
 
