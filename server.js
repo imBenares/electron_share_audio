@@ -734,6 +734,20 @@ app.get('/recent-comment', (req, res) => {
   });
 });
 
+app.get('/recent-user', (req, res) => {
+  const query = `
+            SELECT * FROM user_information ;
+      `;
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('查询失败:', err);
+      res.status(500).json({ success: false, message: '数据库查询错误' });
+    } else {
+      res.json({ success: true, data: results });
+    }
+  });
+});
+
 // 启动服务器
 app.listen(port, () => {
     console.log(`服务器运行在 http://localhost:${port}`);
