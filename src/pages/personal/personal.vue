@@ -790,11 +790,12 @@ const canclesave = async() => {
 }
 
 .passwordEdit {
-  display: flex;
+   display: flex;
   flex-direction: column;
-  align-items: center; /* 水平居中 */
-  justify-content: center; /* 垂直居中 */
-  min-height: 100vh; 
+  align-items: center;        
+  justify-content: center;    
+  min-height: 100vh;          
+  width: 100%;  
 }
 
 .editContent {
@@ -848,6 +849,7 @@ const canclesave = async() => {
     position: relative;
     border: none;
     left: 38px;
+    height: 60px;
     width: 120px;
     border-radius: 5px;
     background-color: #2a355032;

@@ -55,6 +55,7 @@ const routes=[
         path:'/admin',
         name:'admin',
         component:admin,
+        redirect: { name: 'audio_audit' },
         children:[
             {
                 path:'/audio_audit',

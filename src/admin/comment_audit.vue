@@ -1,24 +1,25 @@
 <template>
     <div class="audiolists">
         <ul v-for="(commentlist) in commentlists" :key="commentlist.id" class="commentlist">
-            <div id="comment_info">
-                <div id="content">
+            <div class="content">
+                <div class="user_info">
+                    <div>
+                        <img ref="headshot" id="headshotimg" :src="commentlist.headshotpath ? `local://0/${commentlist.headshotpath}` : defaultheadshot" />
+                    </div>
+                    <div class="comment_info">
                         <div>
-                            <img ref="headshot" id="headshotimg" :src="commentlist.headshotpath ? `local://0/${commentlist.headshotpath}` : defaultheadshot" />
+                            {{ commentlist.user_name }}
                         </div>
-                        <div class="user-comment">
-                            <div>
-                                {{ commentlist.user_name }}
-                            </div>
-                            <div>
-                                {{ commentlist.content }}
-                            </div>
+                        <div>
+                            {{ commentlist.content }}
                         </div>
+                    </div>
+                </div>
+                <div class="comment_control">
+                    <button id="deletebtn" @click="deletecomment(commentlist)">删除</button>
                 </div>
             </div>
-            <div class="comment_control">
-                <button id="deletebtn" @click="deletecomment(commentlist)">删除</button>
-            </div>
+            
         </ul>
     </div>
 </template>
@@ -57,34 +58,6 @@ const deletecomment = async(commentlist) => {
   
 }
 
-const saveRename = async (audiolist) => {
-  const editname = editName.value;
-  const fileId = audiolist.id;
-  const userid = localStorage.getItem("userId")
-  const response = await fetch("http://localhost:3000/saverename",{
-        method: "POST",
-        headers:  { "Content-Type": "application/json" },
-        body: JSON.stringify({  
-                            editname: editname ,
-                            fileId: fileId ,
-                            userid: userid,
-                            })
-  })
-  data = await response.json();
-  if(data.success){
-    const index = audiolists.value.findIndex(item => item.id === fileId);
-    if (index !== -1) {
-      audiolists.value[index].audio_name = editname;
-    }
-  }
-  editingId.value = null;
-};
-
-const startRename = (audiolist) => {
-  editingId.value = audiolist.id;
-  editName.value = audiolist.audio_name;
-};
-
 onMounted(async () => {
     await recommend();
 });
@@ -93,14 +66,53 @@ onMounted(async () => {
 
 <style scoped>
 
+.comment_info{
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px;
+    margin-top: 4px;
+}
+
+.content{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0px 10px 0px;
+}
+
+.user_info{
+    display: flex;
+    
+}
+
+button{
+    border: solid 0px;
+    background-color: #c2c5cc;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+button:hover{
+    background-color: #8b8e94;
+    color: #ffffff;
+}
+
 .commentlist{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    margin: 10px 30px;
+    border-radius: 7px;
+    background-color:#c6cbd856 ;
+}
+
+.audiolist:hover{
+    background-color: #73778056;
 }
 
 .comment_control{
-    position: absolute;
-    right: 50px;
+    display: flex;
+    gap: 10px;
+    margin-right: 40px;
 }
 
 #headshotimg{

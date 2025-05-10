@@ -27,7 +27,7 @@ import { RouterView  } from 'vue-router';
     right: 0;
     bottom: 80px; /* 留出80px的空间 */
     overflow-y: auto; /* 使内容可滚动 */
-    color: aliceblue;
+    color: #161616;
 }
    
 #background{
@@ -39,7 +39,7 @@ import { RouterView  } from 'vue-router';
     right: -1%;
     top: 0px;
     bottom: 0px;
-    filter: blur(16px);
+    filter: blur(9px);
     z-index: -1;
 }
 

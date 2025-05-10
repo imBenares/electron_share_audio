@@ -1,36 +1,33 @@
 <template>
     <div class="audiolists">
         <ul v-for="(audiolist) in audiolists" :key="audiolist.id" class="audiolist">
-            <div id="audio_info">
-                <div id="audioname">
-                        <div>
-                            <img ref="headshot" id="headshotimg" :src="audiolist.headshotpath ? `local://0/${audiolist.headshotpath}` : defaultheadshot" />
-                        </div>
-                    <div class="user-comment">
-                            <div>
-                                {{ audiolist.user_name }}
-                            </div>
-                            <div>
-                                {{ audiolist.content }}
-                            </div>
-                        </div>
-                    <div v-if="editingId === audiolist.id">
-                        <input
-                            v-model="editName"
-                            @keyup.enter="saveRename(audiolist)"
-                            class="rename-input"
-                        />
-                        <button @click="saveRename(audiolist)">保存</button>
+            <div class="content">
+                <div class="audio_info">
+                    <div>
+                        <img ref="headshot" id="headshotimg" :src="audiolist.headshotpath ? `local://0/${audiolist.headshotpath}` : defaultheadshot" />
                     </div>
-                    <div v-else>
-                        {{ audiolist.audio_name }}
+                    <div id="audioinfo">
+                        <div class="audioname">
+                            {{ audiolist.user_name }}
+                        </div>
+                        <div v-if="editingId === audiolist.id">
+                            <input
+                                v-model="editName"
+                                @keyup.enter="saveRename(audiolist)"
+                                class="rename-input"
+                            />
+                            <button @click="saveRename(audiolist)">保存</button>
+                        </div>
+                        <div v-else>
+                            {{ audiolist.audio_name }}
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="audio_control">
-                <button id="renamebtn" @click="startRename(audiolist)">重命名</button>
-                <button id="previewplaybtn" @click="previewplay(audiolist)">播放</button>
-                <button id="deletebtn" @click="deleteaudio(audiolist)">删除</button>
+                <div class="audio_control">
+                    <button id="renamebtn" @click="startRename(audiolist)">重命名</button>
+                    <button id="previewplaybtn" @click="previewplay(audiolist)">播放</button>
+                    <button id="deletebtn" @click="deleteaudio(audiolist)">删除</button>
+                </div>
             </div>
         </ul>
     </div>
@@ -123,12 +120,50 @@ onMounted(async () => {
 
 .audiolist{
     display: flex;
+    flex-direction: column;
+    margin: 10px 30px;
+    border-radius: 7px;
+    background-color:#c6cbd856 ;
+}
+
+button{
+    border: solid 0px;
+    background-color: #c2c5cc;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+button:hover{
+    background-color: #8b8e94;
+    color: #ffffff;
+}
+
+.audiolist:hover{
+    background-color: #73778056;
+}
+
+.content{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0px 10px 0px;
+}
+
+.audio_info{
+    display: flex;
     flex-direction: row;
+    
+}
+
+#audioinfo{
+    margin-left: 20px;
+    margin-top: 4px;
 }
 
 .audio_control{
-    position: absolute;
-    right: 50px;
+    display: flex;
+    gap: 10px;
+    margin-right: 40px;
 }
 
 #headshotimg{
@@ -137,6 +172,5 @@ onMounted(async () => {
     border-radius: 50%;
     margin-top: 2px;
 }
-
 
 </style>

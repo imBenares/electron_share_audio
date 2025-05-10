@@ -46,7 +46,7 @@ onMounted(()=>{
 }
 
 .navigate{
-    background-color: #63b9ff;
+    background-color: #175d97;
 }
 
 .navigate_ul{

@@ -1,34 +1,36 @@
 <template>
     <div class="page-wrapper">
-        <div class="search-container">
-            <input 
-                type="search"
-                v-model="searchQuery"
-                class="search-input"
-                placeholder="搜索音效..."
-                aria-label="音效搜索"
-                @keyup.enter="searchSounds"
-                >
-            <button @click="searchSounds">
-                搜索
-            </button>
-            <button @click="category">
-                分类 
-            </button>
-        </div>
-        <div v-if="iscategory" class="category">
-            <button
-                v-for="cat in categories"
-                :key="cat.id"
-                @click="fetchByCategory(cat.id)"
-                >
-                 {{ cat.name }}
-            </button>
-            <div>
-                <button @click="uncategory">取消分类</button>
+        <div>
+            <div class="search-container">
+                <input 
+                    type="search"
+                    v-model="searchQuery"
+                    class="search-input"
+                    placeholder="搜索音效..."
+                    aria-label="音效搜索"
+                    @keyup.enter="searchSounds"
+                    >
+                <button @click="searchSounds">
+                    搜索
+                </button>
+                <button @click="category">
+                    分类 
+                </button>
+            </div>
+            <div v-if="iscategory" class="category">
+                <button
+                    v-for="cat in categories"
+                    :key="cat.id"
+                    @click="fetchByCategory(cat.id)"
+                    >
+                    {{ cat.name }}
+                </button>
+                <div>
+                    <button @click="uncategory">取消分类</button>
+                </div>
             </div>
         </div>
-        <div class="audio">
+        <div class="audio" ref="audio">
             <div class="audiolists">
                 <ul v-for="(audiolist) in audiolists" :key="audiolist.id" class="audiolist">
                     <div class="audio-control" ref="audiocontrol" :class="{ 'highlight': iscommenting[audiolist.id] }">
@@ -89,6 +91,7 @@ const iscategory = ref(false);
 const iscommenting = ref([]);
 const audiocontrol = ref(null);
 const nan_comment = ref(false);
+const audio = ref(null);
 const categories = [
   { id: 1, name: "自然" },
   { id: 2, name: "科技" },
@@ -217,10 +220,12 @@ const refresh = async() => {
 
 const category = async() => {
     iscategory.value = true;
+    audio.value.style.top = '140px';
 }
 
 function uncategory(){
     iscategory.value = false;
+    audio.value.style.top = '60px';
 }
 
 const fetchByCategory = async (categoryId) => {
@@ -295,6 +300,7 @@ onMounted(async () => {
 }
 
 .category{
+    z-index: 999;
     position: relative;
     height: 80px;
     width: 100%;

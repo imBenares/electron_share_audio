@@ -1,24 +1,28 @@
 <template>
     <div ref="overlay" id="overlay"></div>
     <div id="editPage" v-if="!isOnUpload">
-        <audio ref="audioplayer" @timeupdate="progressLine"></audio>
-        <div>
-            <button @click="filebrower">点我浏览本地文件</button>
-        </div>
-        <div>当前文件为:{{ audioNameText }}</div>
-        <div>
-            <button @click="save">点我保存文件</button>
+        <div class="file-ctrl">
+            <audio ref="audioplayer" @timeupdate="progressLine"></audio>
+            <div class="explorefile">
+                <button @click="filebrower">浏览文件</button>
+            </div>
+            <div class="savefile">
+                <button @click="save">保存文件</button>
+            </div>
+            <div class="filenametext">当前文件为:{{ audioNameText }}</div>
         </div>
         <div ref="errortip" id="errortip">{{ tip }}</div>
         <div class="editTool">
-            <div>
-                <button id="playPauseButton" @click="playPauseButton">{{playPauseButtonText}}</button>
-            </div>
-            <div>
-                <button id="montageButton" @click="montageButton">裁剪</button>
-            </div>
-            <div>
-                <button id="fadeButton" @click="fadeButton">淡入淡出</button>
+            <div class="edit-ctrl">
+                <div>
+                    <button id="playPauseButton" @click="playPauseButton">{{playPauseButtonText}}</button>
+                </div>
+                <div>
+                    <button id="montageButton" @click="montageButton">裁剪</button>
+                </div>
+                <div>
+                    <button id="fadeButton" @click="fadeButton">淡入淡出</button>
+                </div>
             </div>
             <button  id="uploadBtn" @click="uploadBtn">
                 <img id="uploadBtnImg" src="/upload.png">
@@ -482,6 +486,11 @@ const fadeButton = async()=> {
         right: 0px;
     }
 
+    .edit-ctrl{
+        display: flex;
+        margin: 0px 130px;
+    }
+
     .editControl{
         position: absolute;
         width: auto;
@@ -557,9 +566,13 @@ const fadeButton = async()=> {
    }
 
    #playPauseButton{
-    position: relative;
+    margin-right: 20px;
     top: 5px;
     left: 130px;
+   }
+
+   #montageButton{
+    margin-right: 20px;
    }
 
 #start-dragbutton:hover {
@@ -618,6 +631,12 @@ const fadeButton = async()=> {
     border-radius: 10px;
     font-size: 16px;
     background-color: #4d5c7b58;
+}
+
+.file-ctrl{
+    display: flex;
+    width: 100%;
+    background-color: #00000038;
 }
 
 .InfoHead{ 
@@ -712,5 +731,17 @@ const fadeButton = async()=> {
 .selectBtn.selected{
     border: 1px solid #a4e6fe;
     color: #a4e6fe;
+}
+
+.explorefile{
+    margin: 20px 0px 20px 50px;
+}
+
+.savefile{
+    margin: 20px 0px 20px 50px;
+}
+
+.filenametext{
+    margin: 20px 0px 20px 50px;
 }
 </style>
