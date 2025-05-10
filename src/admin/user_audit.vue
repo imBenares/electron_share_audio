@@ -1,20 +1,62 @@
 <template>
     <div class="audiolists">
         <ul v-for="(userlist) in userlists" :key="userlist.id" class="userlist">
-            <div id="comment_info">
-                <div id="content">
-                        <div>
-                            <img ref="headshot" id="headshotimg" :src="userlist.headshotpath ? `local://0/${userlist.headshotpath}` : defaultheadshot" />
-                        </div>
-                        <div class="user-comment">
-                            <div>
-                                {{ userlist.username }}
-                            </div>
-                        </div>
+            <div id="user_info">
+                <div>
+                    <img ref="headshot" id="headshotimg" :src="userlist.headshotpath ? `local://0/${userlist.headshotpath}` : defaultheadshot" />
+                </div>
+                <div class="username">
+                        {{ userlist.username }}
                 </div>
             </div>
-            <div class="comment_control">
-                <button id="deletebtn" @click="deletecomment(userlist)">查看详情</button>
+            <div class="list_control">
+                <button id="deletebtn" @click="checkuser(userlist.id)">查看详情</button>
+            </div>
+            <div v-if="ischecking[userlist.id]" class="user-details">
+                <div class="details">
+                    <div>
+                        userid:{{formatuserid(userlist.user_id)}}
+                    </div>
+                    <div>
+                        生日:{{formatbirthdate(userlist.birthdate)}}
+                    </div>
+                    <div>
+                        性别:{{formatgender(userlist.gender)}}
+                    </div>
+                    <div>
+                        email:{{userlist.email}}
+                    </div>
+                    <div>
+                        电话:{{userlist.tel}}
+                    </div>
+                </div>
+                <div class="permission-details">
+                    <div>
+                        <label>
+                        <input
+                            type="checkbox"
+                            v-model="userlist.upload_permissions"
+                            :true-value="1"
+                            :false-value="0"
+                        />
+                        上传权限
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                        <input
+                            type="checkbox"
+                            v-model="userlist.comment_permissions"
+                            :true-value="1"
+                            :false-value="0"
+                        />
+                        评论权限
+                        </label>
+                    </div>
+                    <div>
+                        <button @click="savePermission(userlist)">保存权限</button>
+                    </div>
+                </div>
             </div>
         </ul>
     </div>
@@ -26,60 +68,65 @@ import defaultheadshot from '/blankheadshot.png'
 
 
 let data = null;
+let response;
 const userlists = ref(null);
 const editingId = ref(null);
 const editName = ref('');
+const ischecking = ref([]);
 
 const recommend = async() => {
-    const response = await fetch("http://localhost:3000/recent-user");
+    response = await fetch("http://localhost:3000/recent-user");
     const result = await response.json();
     //console.log(result);
     userlists.value = result.data; 
+    console.log(result.data);
+    
 }
 
-const deletecomment = async(userlist) => {
-  const fileId = audiolist.id;
-  const response = await fetch("http://localhost:3000/deleteaudio",{
-      method: "POST",
-      headers:  { "Content-Type": "application/json" },
-      body: JSON.stringify({  
-                            fileId: fileId ,
-                            })
-  })
-  data = await response.json();
-  console.log(data);
-  if(data.success){
-    await recommend();
-  }
-  
+const checkuser = async(id) => {
+    ischecking.value = [];
+    ischecking.value[id] = true;
+    
 }
 
-const saveRename = async (audiolist) => {
-  const editname = editName.value;
-  const fileId = audiolist.id;
-  const userid = localStorage.getItem("userId")
-  const response = await fetch("http://localhost:3000/saverename",{
-        method: "POST",
-        headers:  { "Content-Type": "application/json" },
-        body: JSON.stringify({  
-                            editname: editname ,
-                            fileId: fileId ,
-                            userid: userid,
-                            })
-  })
-  data = await response.json();
-  if(data.success){
-    const index = audiolists.value.findIndex(item => item.id === fileId);
-    if (index !== -1) {
-      audiolists.value[index].audio_name = editname;
+function formatuserid(userid){
+    userid = userid + 100000;
+    return userid;
+}
+
+function formatbirthdate(birthdate){
+    const date = new Date(birthdate);
+    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
+function formatgender(gender){
+    if (gender == 1) {
+      gender = "男";
+    } else if (gender == 2) {
+      gender = "女";
+    } else {
+      gender = "保密";
     }
-  }
-  editingId.value = null;
-};
+    return gender;
+}
 
-const startRename = (audiolist) => {
-  editingId.value = audiolist.id;
-  editName.value = audiolist.audio_name;
+const savePermission = async (user) => {
+  const response = await fetch("http://localhost:3000/update-permission", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId: user.id,
+      uploadPermission: user.upload_permissions,
+      commentPermission: user.comment_permissions,
+    }),
+  });
+
+  const result = await response.json();
+  if (result.success) {
+    alert("权限更新成功！");
+  } else {
+    alert("权限更新失败：" + result.message);
+  }
 };
 
 onMounted(async () => {
@@ -95,7 +142,7 @@ onMounted(async () => {
     flex-direction: row;
 }
 
-.comment_control{
+.list_control{
     position: absolute;
     right: 50px;
 }

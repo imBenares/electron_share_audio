@@ -748,6 +748,33 @@ app.get('/recent-user', (req, res) => {
   });
 });
 
+app.post('/update-permission', (req, res) => {
+  const { userId, uploadPermission, commentPermission } = req.body;
+
+  if (typeof userId === 'undefined') {
+    return res.status(400).json({ success: false, message: '缺少用户ID' });
+  }
+
+  // 默认权限为1，如果参数未提供则不更新
+  const upload = typeof uploadPermission !== 'undefined' ? uploadPermission : 1;
+  const comment = typeof commentPermission !== 'undefined' ? commentPermission : 1;
+
+  const sql = `
+    UPDATE user_information
+    SET upload_permissions = ?, comment_permissions = ?
+    WHERE id = ?
+  `;
+
+  db.query(sql, [upload, comment, userId], (err, result) => {
+    if (err) {
+      console.error('权限更新失败:', err);
+      return res.status(500).json({ success: false, message: '数据库更新失败' });
+    }
+
+    res.json({ success: true, message: '权限更新成功' });
+  });
+});
+
 // 启动服务器
 app.listen(port, () => {
     console.log(`服务器运行在 http://localhost:${port}`);
