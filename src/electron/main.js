@@ -12,7 +12,6 @@ const { Blob } = require('buffer');
 const axios = require('axios');
 const FormData = require('form-data');
 const crypto = require('crypto');
-const isDev = process.env.NODE_ENV === 'development';
 
 function createWindow(){
   const win = new BrowserWindow({
@@ -245,7 +244,6 @@ function createWindow(){
     return new Promise((resolve, reject) => {
       ffmpeg(inputPath)
         .audioCodec('libmp3lame')
-        .audioBitrate(192)
         .outputOptions([
           '-f mp3',
           '-write_xing 0',

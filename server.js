@@ -275,8 +275,8 @@ app.post('/register', async (req, res) => {
     await db.promise().beginTransaction();
 
     // 插入 user_login 表
-    const insert_login = 'INSERT INTO user_login (username, password) VALUES (?, ?)';
-    const [loginResult] = await db.promise().query(insert_login, [username, password]);
+    const insert_login = 'INSERT INTO user_login (username, password,is_admin) VALUES (?, ?, ?)';
+    const [loginResult] = await db.promise().query(insert_login, [username, password, 0]);
     if (!loginResult.insertId) {
       throw new Error("插入 user_login 失败");
     }
@@ -664,17 +664,21 @@ app.post('/getcomment',(req,res) => {
 
 app.get('/recent-audio', (req, res) => {
   const query = `
-                SELECT 
-                audio_info.id, 
-                audio_info.audio_name, 
-                audio_info.upload_time,
-                audio_info.user_name,
-                user_information.headshotpath
-                FROM audio_info
-                JOIN user_information ON audio_info.user_id = user_information.user_id
-                WHERE audio_info.is_deleted = 0
-                ORDER BY audio_info.upload_time DESC
-                LIMIT 100;
+    SELECT 
+      ai.id, 
+      ai.audio_name, 
+      ai.upload_time,
+      ai.user_name,
+      ui.headshotpath,
+      GROUP_CONCAT(t.tag) AS tags
+    FROM audio_info ai
+    JOIN user_information ui ON ai.user_id = ui.user_id
+    LEFT JOIN file_tags ft ON ai.id = ft.file_id
+    LEFT JOIN tag_id t ON ft.tag_id = t.id
+    WHERE ai.is_deleted = 0
+    GROUP BY ai.id
+    ORDER BY ai.upload_time DESC
+    LIMIT 100;
   `;
 
   db.query(query, (err, results) => {
@@ -682,7 +686,12 @@ app.get('/recent-audio', (req, res) => {
       console.error('查询失败:', err);
       res.status(500).json({ success: false, message: '数据库查询错误' });
     } else {
-      res.json({ success: true, data: results });
+      // 将 tags 字符串转为数组
+      const formattedResults = results.map(row => ({
+        ...row,
+        tags: row.tags ? row.tags.split(',') : []
+      }));
+      res.json({ success: true, data: formattedResults });
     }
   });
 });
@@ -774,6 +783,81 @@ app.post('/update-permission', (req, res) => {
     res.json({ success: true, message: '权限更新成功' });
   });
 });
+
+app.post('/savetags', (req, res) => {
+  const { id, tags } = req.body;
+
+  if (!id || !Array.isArray(tags)) {
+    return res.status(400).json({ success: false, message: '参数不合法' });
+  }
+
+  // 查询 tag 名称对应的 tag_id
+  const getTagIdsQuery = 'SELECT id, tag FROM tag_id WHERE tag IN (?)';
+  db.query(getTagIdsQuery, [tags], (err, tagResults) => {
+    if (err) {
+      console.error('查询标签 ID 失败:', err);
+      return res.status(500).json({ success: false, message: '查询标签失败' });
+    }
+
+    const tagIdMap = {};
+    tagResults.forEach(row => {
+      tagIdMap[row.tag] = row.id;
+    });
+
+    // 检查是否有不存在的标签
+    const unknownTags = tags.filter(tag => !(tag in tagIdMap));
+    if (unknownTags.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `以下标签不存在：${unknownTags.join(', ')}`
+      });
+    }
+
+    // 开始事务
+    db.beginTransaction(err => {
+      if (err) {
+        console.error('开启事务失败:', err);
+        return res.status(500).json({ success: false, message: '事务开启失败' });
+      }
+
+      // 删除旧标签绑定
+      const deleteQuery = 'DELETE FROM file_tags WHERE file_id = ?';
+      db.query(deleteQuery, [id], (err) => {
+        if (err) {
+          return db.rollback(() => {
+            console.error('删除旧标签失败:', err);
+            res.status(500).json({ success: false, message: '删除旧标签失败' });
+          });
+        }
+
+        // 插入新标签绑定
+        const insertQuery = 'INSERT INTO file_tags (file_id, tag_id) VALUES ?';
+        const values = tags.map(tag => [id, tagIdMap[tag]]);
+
+        db.query(insertQuery, [values], (err) => {
+          if (err) {
+            return db.rollback(() => {
+              console.error('插入新标签失败:', err);
+              res.status(500).json({ success: false, message: '插入标签失败' });
+            });
+          }
+
+          db.commit(err => {
+            if (err) {
+              return db.rollback(() => {
+                console.error('提交事务失败:', err);
+                res.status(500).json({ success: false, message: '事务提交失败' });
+              });
+            }
+
+            res.json({ success: true, message: '标签更新成功' });
+          });
+        });
+      });
+    });
+  });
+});
+
 
 // 启动服务器
 app.listen(port, () => {

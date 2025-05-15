@@ -838,6 +838,7 @@ const canclesave = async() => {
 #confirm{
     position: relative;
     border: none;
+    margin-top: 20px;
     height: 60px;
     width: 120px;
     left: -22px;

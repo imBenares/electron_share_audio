@@ -264,6 +264,8 @@ onMounted(async () => {
 }
 
 .user-details{
+  display: flex;
+  flex-direction: column;
   margin: 0px 80px;
   background-color: #9397a156;
   border-radius: 0px 0px 7px 7px;
@@ -321,11 +323,6 @@ button:hover{
     border:1px solid #ffffff;
     border-radius: 50%;
     margin-top: 2px;
-}
-
-.user-details{
-    display: flex;
-    flex-direction: column;
 }
 
 .pagination {

@@ -7,9 +7,6 @@
                 <RouterLink to="home" active-class="active">首页</RouterLink>
             </ul>
             <ul>
-                <RouterLink to="filebrower" active-class="active">文件浏览</RouterLink>
-            </ul>
-            <ul>
                 <RouterLink to="personal" active-class="active">个人主页</RouterLink>
             </ul>
             <ul>

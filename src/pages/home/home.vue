@@ -281,10 +281,15 @@ onMounted(async () => {
   margin-left: 10px;
   height: 35px;
 
-  border: 0px solid;
+  border: 0px none;
   border-radius: 20px;
   background-color: #1f20209f;
   width: 400px;
+}
+
+.search-input:focus{
+    outline: none;
+    background-color:#151515b5;
 }
 
 .result-container {
